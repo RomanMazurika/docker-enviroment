@@ -1,0 +1,23 @@
+/node_modules
+/public/hot
+/public/storage
+/public/js/builds
+/storage/*.key
+/vendor
+/.idea
+composer.lock
+/.DS_Store
+/.vscode
+/.vagrant
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+*.log
+.env
+*.htpasswd
+Homestead.yaml
+Homestead.json
+
+# Rocketeer PHP task runner and deployment package. https://github.com/rocketeers/rocketeer
+.rocketeer/
