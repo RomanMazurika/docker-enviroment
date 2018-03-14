@@ -1,0 +1,17 @@
+2017/08/29 12:34:16 [error] 7#7: *233 open() "/var/www/api/public/favicon.ico" failed (2: No such file or directory), client: 172.20.0.1, server: api.nonstop.local, request: "GET /favicon.ico HTTP/1.1", host: "api.nonstop.local", referrer: "http://api.nonstop.local/admin/drivers"
+2017/11/17 14:58:27 [error] 5#5: *159 FastCGI sent in stderr: "PHP message: PHP Fatal error:  Cannot redeclare App\Models\Delivery::parentTrip() in /var/www/api/app/Models/Delivery.php on line 78
+PHP message: PHP Stack trace:
+PHP message: PHP   1. {main}() /var/www/api/public/index.php:0
+PHP message: PHP   2. App\Http\Kernel->handle() /var/www/api/public/index.php:53
+PHP message: PHP   3. App\Http\Kernel->sendRequestThroughRouter() /var/www/api/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:116
+PHP message: PHP   4. Illuminate\Routing\Pipeline->then() /var/www/api/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:151
+PHP message: PHP   5. Illuminate\Routing\Pipeline->Illuminate\Routing\{closure}() /var/www/api/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:102
+PHP message: PHP   6. Illuminate\Routing\Pipeline->Illuminate\Pipeline\{closure}() /var/www/api/vendor/laravel/framework/src/Illuminate/Routing/Pipeline.php:53
+PHP message: PHP   7. Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode->handle() /var/www/api/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:149
+PHP message: PHP   8. Illuminate\Routing\Pipeline->Illuminate\Routing\{closure}() /var/www/api/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/CheckForMaintenanceMode.php:46
+PHP message: PHP   9. Illuminate\Routing\Pipeline->Illuminate\Pipeline\{closure}() /var/www/api/vendor/laravel/framework/src/Illuminate/Routing/Pipeline.php:53
+PHP message: PHP  10. Illuminate\Foundation\Http\Middleware\ValidatePostSize->handle() /var/www/api/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:149
+PHP message: PHP  11. Illuminate\Routing\Pipeline->Illuminate\Routing\{closure}() /var/www/api/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ValidatePostSize.php:27
+PHP message: PHP  12. Illuminate\Routing\Pipeline->Illuminate\Pipeline\{closure}() /var/www/api/vendor/laravel/framework/src/Illuminate/Routing/Pipeline.php:53
+PHP message: PHP  13. App\
+2017/11/22 17:38:24 [warn] 5#5: *274 an upstream response is buffered to a temporary file /var/cache/nginx/fastcgi_temp/1/00/0000000001 while reading upstream, client: 172.20.0.1, server: api.nonstop, request: "GET /admin/deliveries?to_date=2017-11-20&page=1&per_page=15&driver_id=10&status=%5B3,2%5D&download=true HTTP/1.1", upstream: "fastcgi://172.20.0.6:9000", host: "api.nonstop"

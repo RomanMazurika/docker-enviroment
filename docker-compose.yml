@@ -1,0 +1,217 @@
+version: '2'
+
+services:
+
+### Applications Code Container #############################
+
+    applications:
+      image: tianon/true
+      volumes:
+        - ../kellerx:/var/www/kellerx
+        - ../auth:/var/www/auth
+        - ../club:/var/www/club
+        - ../keller-sports:/var/www/keller-sports
+        - ../themuse:/var/www/themuse
+
+### Workspace Utilities Container ###########################
+
+    workspace:
+      build:
+        context: ./workspace
+        args:
+          - INSTALL_XDEBUG=${WORKSPACE_INSTALL_XDEBUG}
+          - INSTALL_SOAP=${WORKSPACE_INSTALL_SOAP}
+          - INSTALL_NODE=${WORKSPACE_INSTALL_NODE}
+          - COMPOSER_GLOBAL_INSTALL=${WORKSPACE_COMPOSER_GLOBAL_INSTALL}
+          - INSTALL_LARAVEL_ENVOY=${WORKSPACE_INSTALL_LARAVEL_ENVOY}
+          - INSTALL_LARAVEL_INSTALLER=${WORKSPACE_INSTALL_LARAVEL_INSTALLER}
+          - PUID=${WORKSPACE_PUID}
+          - PGID=${WORKSPACE_PGID}
+          - NODE_VERSION=${WORKSPACE_NODE_VERSION}
+          - TZ=${WORKSPACE_TIMEZONE}
+        #dockerfile: "Dockerfile5_6"
+        dockerfile: "Dockerfile7_2"
+      extra_hosts:
+        - "ams-dev.keller-sports.com:35.205.168.217"
+      volumes_from:
+        - applications
+      tty: true
+      networks:
+        - frontend
+        - backend
+
+### PHP-FPM Container #######################################
+
+    php_fpm:
+      build:
+        context: ./php-fpm
+        args:
+         - INSTALL_XDEBUG=${PHP_FPM_INSTALL_XDEBUG}
+         - INSTALL_SOAP=${PHP_FPM_INSTALL_SOAP}
+         - INSTALL_ZIP_ARCHIVE=${PHP_FPM_INSTALL_ZIP_ARCHIVE}
+         - INSTALL_PHPREDIS=${PHP_FPM_INSTALL_PHPREDIS}
+         - INSTALL_OPCACHE=${PHP_FPM_INSTALL_OPCACHE}
+         - INSTALL_EXIF=${PHP_FPM_INSTALL_EXIF}
+         - INSTALL_MYSQLI=${PHP_FPM_INSTALL_MYSQLI}
+        #dockerfile: "Dockerfile5_6"
+        dockerfile: "Dockerfile7_2"
+      volumes_from:
+        - applications
+      volumes:
+        - ./php-fpm/php.ini:/usr/local/etc/php/php.ini
+      expose:
+        - "9000"
+      depends_on:
+        - workspace
+      extra_hosts:
+        - "dockerhost:${DOCKER_HOST_IP}"
+        - "ams-dev.keller-sports.com:35.205.168.217"
+      networks:
+        - backend
+
+### Apache Server Container #################################
+
+    apache2:
+        build:
+          context: ./apache2
+          args:
+            - PHP_UPSTREAM_CONTAINER=${APACHE_PHP_UPSTREAM_CONTAINER}
+            - PHP_UPSTREAM_PORT=${APACHE_PHP_UPSTREAM_PORT}
+            - PHP_UPSTREAM_TIMEOUT=${APACHE_PHP_UPSTREAM_TIMEOUT}
+        volumes_from:
+          - applications
+        volumes:
+          - ${APACHE_HOST_LOG_PATH}:/var/log/apache2
+          - ${APACHE_SITES_PATH}:/etc/apache2/sites-available
+        ports:
+          - "${APACHE_HOST_HTTP_PORT}:80"
+          - "${APACHE_HOST_HTTPS_PORT}:443"
+        depends_on:
+          - php_fpm
+        networks:
+          - frontend
+          - backend
+
+### Percona Container #########################################
+
+    percona:
+      build:
+        context: ./percona
+      environment:
+        - MYSQL_ROOT_PASSWORD=123321
+      volumes:
+        - ${DATA_SAVE_PATH}/percona:/var/lib/mysql
+      ports:
+        - "3306:3306"
+      networks:
+        - backend
+
+### ElasticSearch Container #################################
+
+    elasticsearch:
+      build: ./elasticsearch
+      volumes:
+        - elasticsearch-data:/usr/share/elasticsearch/data
+        - elasticsearch-plugins:/usr/share/elasticsearch/plugins
+      ports:
+        - "${ELASTICSEARCH_HOST_HTTP_PORT}:9200"
+        - "${ELASTICSEARCH_HOST_TRANSPORT_PORT}:9300"
+      environment:
+        - cluster.name=laradock-cluster
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      mem_limit: 1024m
+      depends_on:
+        - php_fpm
+      networks:
+        - frontend
+        - backend
+
+
+### Kibana Container #######################################
+#
+    kibana:
+      build: ./kibana
+      ports:
+        - "${KIBANA_HTTP_PORT}:5601"
+      depends_on:
+        - elasticsearch
+      networks:
+        - frontend
+        - backend
+
+### Supervisor Container #######################################
+
+    supervisor:
+        build:
+            context: ./supervisor
+        volumes:
+            - ./logs/supervisor/:/var/log/supervisor
+            - ./supervisor/conf.d:/etc/supervisor/conf.d
+        volumes_from:
+            - applications
+        depends_on:
+            - workspace
+        expose:
+            - "9001"
+        tmpfs:
+            - /tmp
+            - /run
+        links:
+            - workspace
+
+### redis Container #######################################
+
+#    redis:
+#        build: ./redis
+#        volumes:
+#            - redis:/data
+#        ports:
+#            - "6379:6379"
+
+  ### Beanstalkd Container ####################################
+
+    beanstalkd:
+        build: ./beanstalkd
+        ports:
+            - "11300:11300"
+        privileged: true
+        links:
+            - php_fpm
+        networks:
+            - frontend
+            - backend
+
+  ### Beanstalkd Console Container ############################
+
+    beanstalkd-console:
+        build: ./beanstalkd-console
+        ports:
+            - "2080:2080"
+        links:
+            - beanstalkd
+        networks:
+            - frontend
+            - backend
+
+### Networks Setup ############################################
+
+networks:
+  frontend:
+    driver: "bridge"
+  backend:
+    driver: "bridge"
+
+### Volumes Setup #############################################
+
+volumes:
+  percona:
+    driver: "local"
+  redis:
+    driver: "local"
+#  memcached:
+#    driver: "local"
+  elasticsearch-data:
+    driver: "local"
+  elasticsearch-plugins:
+    driver: "local"
