@@ -7,11 +7,7 @@ services:
     applications:
       image: tianon/true
       volumes:
-        - ../kellerx:/var/www/kellerx
-        - ../auth:/var/www/auth
-        - ../pms:/var/www/pms
-        - ../club:/var/www/club
-        - ../keller-sports:/var/www/keller-sports
+        - ../name:/path
 
 ### Workspace Utilities Container ###########################
 
@@ -65,8 +61,6 @@ services:
       depends_on:
         - workspace
       extra_hosts:
-        - "ams-dev.keller-sports.com:35.205.168.217"
-        - "dev.the-muze.com:192.168.0.81"
       networks:
         - backend
 
