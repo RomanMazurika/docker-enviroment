@@ -9,9 +9,9 @@ services:
       volumes:
         - ../kellerx:/var/www/kellerx
         - ../auth:/var/www/auth
+        - ../pms:/var/www/pms
         - ../club:/var/www/club
         - ../keller-sports:/var/www/keller-sports
-        - ../themuse:/var/www/themuse
 
 ### Workspace Utilities Container ###########################
 
@@ -33,6 +33,7 @@ services:
         dockerfile: "Dockerfile7_2"
       extra_hosts:
         - "ams-dev.keller-sports.com:35.205.168.217"
+        - "dev.the-muze.com:192.168.0.81"
       volumes_from:
         - applications
       tty: true
@@ -64,8 +65,8 @@ services:
       depends_on:
         - workspace
       extra_hosts:
-        - "dockerhost:${DOCKER_HOST_IP}"
         - "ams-dev.keller-sports.com:35.205.168.217"
+        - "dev.the-muze.com:192.168.0.81"
       networks:
         - backend
 
@@ -169,7 +170,7 @@ services:
 #        ports:
 #            - "6379:6379"
 
-  ### Beanstalkd Container ####################################
+### Beanstalkd Container ####################################
 
     beanstalkd:
         build: ./beanstalkd
@@ -179,10 +180,9 @@ services:
         links:
             - php_fpm
         networks:
-            - frontend
             - backend
 
-  ### Beanstalkd Console Container ############################
+### Beanstalkd Console Container ############################
 
     beanstalkd-console:
         build: ./beanstalkd-console
@@ -191,7 +191,6 @@ services:
         links:
             - beanstalkd
         networks:
-            - frontend
             - backend
 
 ### Networks Setup ############################################
@@ -206,8 +205,6 @@ networks:
 
 volumes:
   percona:
-    driver: "local"
-  redis:
     driver: "local"
 #  memcached:
 #    driver: "local"
